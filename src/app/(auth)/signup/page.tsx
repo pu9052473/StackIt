@@ -97,7 +97,7 @@ const SignupPage = () => {
       if (user?.user && user.user.user_metadata.role === "ADMIN") {
         router.push("/admin");
       } else {
-        router.push("/quesions");
+        router.push("/questions");
       }
       toast.success("Account created successfully!");
     } catch (error) {
