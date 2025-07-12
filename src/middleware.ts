@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
     "/about",
     "/api/auth/callback",
   ];
-  const isPublicApiUserRoute = pathname.startsWith("/api/users");
+  const isPublicApiUserRoute = pathname.startsWith("/api");
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
 

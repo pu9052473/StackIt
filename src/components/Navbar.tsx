@@ -38,7 +38,6 @@ const Navbar = () => {
     };
   }, []);
 
-  if (!openRoute) return null;
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "auto";
   }, [mobileOpen]);

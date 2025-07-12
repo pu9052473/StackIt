@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -6,6 +7,13 @@ export async function GET(
   { params }: { params: { userId: string } }
 ) {
   try {
+    const cookie = cookies();
+    const userC = cookie.get("stackit_user_data");
+    const user = userC ? JSON.parse(userC.value) : null;
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { userId } = params;
 
     if (!userId) {
@@ -21,9 +29,9 @@ export async function GET(
     });
 
     return NextResponse.json(
-        { message: "Notification fetched", notifications },
-        { status: 400 }
-      );
+      { message: "Notification fetched", notifications },
+      { status: 400 }
+    );
   } catch (error: any) {
     console.error("GET /api/users/:userId/notification error:", error);
     return NextResponse.json(
