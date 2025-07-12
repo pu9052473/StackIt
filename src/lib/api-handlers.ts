@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/db";
-import { ROLE } from "@prisma/client";
 import Cookies from "js-cookie";
 import { getUserFromCookies } from "@/lib/getUserFromCookies";
 import { supabase } from "@/lib/supabase";
@@ -24,7 +23,7 @@ export async function getUserRole(userId: string) {
 export async function createUser(data: {
   id: string;
   email: string;
-  role: ROLE;
+  role: "USER" | "ADMIN"; // or import ROLE enum/type if defined elsewhere
   name: string;
 }) {
   try {
@@ -39,7 +38,7 @@ export async function createUser(data: {
       data: {
         id,
         email,
-        name,
+        userName: name,
         role,
       },
     });
@@ -50,18 +49,6 @@ export async function createUser(data: {
     throw error;
   }
 }
-
-export const signUpWithGoogle = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: "http://localhost:3000/login",
-    },
-  });
-
-  if (error) throw new Error("Google sign-in failed.");
-  return data;
-};
 
 class ApiClient {
   private baseUrl: string;

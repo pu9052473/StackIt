@@ -2,19 +2,18 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import { Toaster } from "react-hot-toast";import { ThemeToggle } from "@/components/theme-toogle";
-
+import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Menu } from "lucide-react";
 import { QueryProvider } from "@/utils/QueryProvider";
 import Navbar from "@/components/Navbar";
 import { Breadcrumbs } from "@/components/BreadCumbs";
 
 export const metadata = {
-  title: "IdeoCity",
-  description: "Validate and build your product ideas",
+  title: "StackIt",
+  description:
+    "StackIt is a minimal and user-friendly Q&A platform that enables collaborative learning and structured knowledge sharing within a focused community.",
 };
+
 
 export default function RootLayout({
   children,

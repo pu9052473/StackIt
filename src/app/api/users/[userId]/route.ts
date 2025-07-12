@@ -18,7 +18,6 @@ export async function GET(
 
     const user = await prisma.user.findUnique({
       where: { id: String(userId) },
-      include: { package: true },
     });
 
     console.log("Fetched user:", user);
@@ -73,8 +72,6 @@ export async function PATCH(
     // Filter only fields with values (not undefined)
     const updateData: any = {};
     const allowedFields = [
-      "name",
-      "location",
       "profession",
       "age",
       "about",
