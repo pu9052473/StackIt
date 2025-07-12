@@ -7,82 +7,75 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ROLE {
-  USER
-  ADMIN
-}
-
 model User {
-  id          String  @id @default(cuid())
-  userName    String  @unique
-  email       String  @unique
-  profession  String?
-  age         Int?
-  about       String?
-  socialLinks Json[] //title , link
-  role        ROLE    @default(USER)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id           String         @id @default(cuid())
+  userName     String         @unique
+  email        String         @unique
+  profession   String?
+  age          Int?
+  about        String?
+  socialLinks  Json[]
+  role         ROLE           @default(USER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   answer       Answer[]       @relation("answer_to_user")
-  question     Question[]     @relation("question_to_user")
   comment      Comment[]      @relation("comment_to_user")
   notification Notification[] @relation("notification_to_user")
+  question     Question[]     @relation("question_to_user")
 }
 
 model Question {
-  id              Int      @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   userId          String
   title           String
-  description     Json[]
   tag             String[]
-  isAnswered      Boolean  @default(false)
-  correctAnswerId Int?     @unique
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  user          User     @relation("question_to_user", fields: [userId], references: [id])
-  answer        Answer[]
-  correctAnswer Answer?  @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  correctAnswerId Int?           @unique
+  isAnswered      Boolean        @default(false)
+  description     Json[]
+  Notification    Notification[]
+  correctAnswer   Answer?        @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
+  user            User           @relation("question_to_user", fields: [userId], references: [id])
+  answer          Answer[]       @relation("AnswerToQuestion")
 }
 
 model Answer {
-  id          Int    @id @default(autoincrement())
-  userId      String
-  questionId  Int
-  description Json[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user                    User      @relation("answer_to_user", fields: [userId], references: [id])
-  correctAnswerOfQuestion Question? @relation("CorrectAnswer")
-
-  comment  Comment[]
-  Question Question[]
+  id                      Int        @id @default(autoincrement())
+  userId                  String
+  questionId              Int
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+  description             Json[]
+  user                    User       @relation("answer_to_user", fields: [userId], references: [id])
+  comment                 Comment[]
+  correctAnswerOfQuestion Question?  @relation("CorrectAnswer")
+  Question                Question[] @relation("AnswerToQuestion")
 }
 
 model Comment {
-  id          Int    @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   userId      String
   answerId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   description Json[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User   @relation("comment_to_user", fields: [userId], references: [id])
-  answer Answer @relation(fields: [answerId], references: [id])
+  answer      Answer   @relation(fields: [answerId], references: [id])
+  user        User     @relation("comment_to_user", fields: [userId], references: [id])
 }
 
 model Notification {
-  id          Int    @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   userId      String
   description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  questionId  Int
+  Question    Question @relation(fields: [questionId], references: [id])
+  user        User     @relation("notification_to_user", fields: [userId], references: [id])
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation("notification_to_user", fields: [userId], references: [id])
+enum ROLE {
+  USER
+  ADMIN
 }
