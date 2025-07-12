@@ -13,15 +13,6 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pathName = usePathname();
-
-  const openRoute =
-    pathName.includes("/login") ||
-    pathName.includes("/signup") ||
-    pathName.includes("/privacypolicy") ||
-    pathName.includes("/termsandconditions") ||
-    pathName.includes("/usepolicy") ||
-    pathName === "/";
 
   useEffect(() => {
     // Initial animation - navbar becomes visible
@@ -166,7 +157,7 @@ const Navbar = () => {
     transition-all duration-500
     ${
       isScrolled
-        ? "py-3 shadow-lg rounded-3xl border border-primary/20 bg-background/80 backdrop-blur-md"
+        ? "py-3 shadow-lg top-5 rounded-3xl border border-primary/30 bg-background/50 backdrop-blur-md"
         : "py-6 bg-transparent"
     }
   `}
@@ -184,23 +175,11 @@ const Navbar = () => {
               initial="initial"
               animate={isVisible ? ["visible", "scrolled"] : "initial"}
             >
-              <Link href="/">
-                <Image
-                  src={logo_dark}
-                  alt="IdeoCity"
-                  width={150}
-                  height={20}
-                  className="object-contain hidden dark:block max-w-full h-auto"
-                  priority
-                />
-                <Image
-                  src={logo_light}
-                  alt="IdeoCity"
-                  width={150}
-                  height={20}
-                  className="object-contain dark:hidden block max-w-full h-auto"
-                  priority
-                />
+              <Link
+                href="/"
+                className="flex items-center justify-center text-xl font-bold"
+              >
+                Stack <span className="text-primary ">It</span>
               </Link>
             </motion.div>
 

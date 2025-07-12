@@ -44,7 +44,7 @@ const LoginPage = () => {
       if (user.user_metadata.role === "ADMIN") {
         router.push("/admin");
       } else {
-        router.push("/quesions");
+        router.push("/questions");
       }
       toast.success("Logged in successfully");
     } catch (error: any) {
@@ -59,7 +59,9 @@ const LoginPage = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Heading */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-text-inverse dark:text-text-primary">Welcome Back</h1>
+          <h1 className="text-3xl font-bold text-text-inverse dark:text-text-primary">
+            Welcome Back
+          </h1>
           <p className="text-text-secondary text-sm mt-2">
             Sign in to continue your journey
           </p>
