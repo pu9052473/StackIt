@@ -47,9 +47,8 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editForm, setEditForm] = useState({
-    name: "",
+    userName: "",
     email: "",
-    location: "",
     profession: "",
     age: "",
     about: "",
@@ -70,12 +69,8 @@ const ProfilePage = () => {
     enabled: !!authUser?.id,
   });
 
-  console.log(userData);
-
   const validateForm = () => {
     const errors: Record<string, string> = {};
-
-    if (!editForm.name.trim()) errors.name = "Name is required";
 
     const age = parseInt(editForm.age);
     if (editForm.age && (age < 1 || age > 150))
@@ -101,8 +96,6 @@ const ProfilePage = () => {
 
     try {
       const payload = {
-        name: editForm.name || "",
-        location: editForm.location || "",
         profession: editForm.profession || "",
         age: editForm.age ? parseInt(editForm.age) : null,
         about: editForm.about || "",
@@ -125,9 +118,10 @@ const ProfilePage = () => {
       await refetch();
       setValidationErrors({});
     } catch (err: any) {
+      toast.error(err || "Somethig nwent wrong");
+    } finally {
       setIsUpdating(false);
       setIsEditing(false);
-      toast.error(err || "Somethig nwent wrong");
     }
   };
 
@@ -135,9 +129,8 @@ const ProfilePage = () => {
     if (!userData) return;
     setIsEditing(true);
     setEditForm({
-      name: userData.name || "",
+      userName: userData.userName || "",
       email: userData.email || "",
-      location: userData.location || "",
       profession: userData.profession || "",
       age: userData.age?.toString() || "",
       about: userData.about || "",
@@ -201,11 +194,6 @@ const ProfilePage = () => {
 
   const handleSaveProfile = async () => await updateUserData();
 
-  const handleSignOut = () => {
-    // Handle sign out logic
-    console.log("Sign out");
-  };
-
   const formatMemberSince = (dateString: any) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -228,7 +216,7 @@ const ProfilePage = () => {
     }
   };
 
-  if (isLoading) return <ProfileSkeleton />
+  if (isLoading) return <ProfileSkeleton />;
 
   if (!userData) {
     return (
@@ -282,8 +270,8 @@ const ProfilePage = () => {
                   {/* Avatar */}
                   <div className="relative">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg">
-                      {userData.name
-                        ? userData.name.charAt(0).toUpperCase()
+                      {userData.userName
+                        ? userData.userName.charAt(0).toUpperCase()
                         : userData.email.charAt(0).toUpperCase()}
                     </div>
                   </div>
@@ -297,22 +285,13 @@ const ProfilePage = () => {
                             <div>
                               <input
                                 type="text"
-                                value={editForm.name}
+                                value={editForm.userName}
                                 onChange={(e) =>
-                                  handleInputChange("name", e.target.value)
+                                  handleInputChange("userName", e.target.value)
                                 }
-                                className={`text-xl sm:text-2xl font-bold dark:bg-input-dark bg-input border border-border-DEFAULT text-foreground-DEFAULT rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-full transition-all ${
-                                  validationErrors.name
-                                    ? "border-red-300 focus:ring-red-500"
-                                    : ""
-                                }`}
-                                placeholder="Full Name"
+                                className={`text-xl sm:text-2xl font-bold dark:bg-input-dark bg-input border border-border-DEFAULT text-foreground-DEFAULT rounded-xl px-4 py-3 cursor-not-allowed w-full`}
+                                disabled
                               />
-                              {validationErrors.name && (
-                                <p className="text-red-600 dark:text-red-400 text-sm mt-1">
-                                  {validationErrors.name}
-                                </p>
-                              )}
                             </div>
 
                             <div className="grid grid-cols-1 gap-4">
@@ -323,22 +302,6 @@ const ProfilePage = () => {
                                   value={editForm.email}
                                   className="flex-1 dark:bg-input-dark bg-input border border-border-DEFAULT rounded-xl px-3 py-2 text-muted-DEFAULT cursor-not-allowed"
                                   disabled
-                                />
-                              </div>
-
-                              <div className="flex items-center gap-3">
-                                <MapPin className="w-5 h-5 text-muted-DEFAULT flex-shrink-0" />
-                                <input
-                                  type="text"
-                                  value={editForm.location}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      "location",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="flex-1 dark:bg-input-dark bg-input border border-border-DEFAULT text-foreground-DEFAULT rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                  placeholder="Location"
                                 />
                               </div>
 
@@ -387,7 +350,7 @@ const ProfilePage = () => {
                         ) : (
                           <div className="space-y-3">
                             <h2 className="text-xl sm:text-2xl font-bold text-foreground-DEFAULT truncate">
-                              {userData.name || "No name set"}
+                              {userData.userName || "No name set"}
                             </h2>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -397,15 +360,6 @@ const ProfilePage = () => {
                                   {userData.email}
                                 </span>
                               </div>
-
-                              {userData.location && (
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="w-4 h-4 text-muted-DEFAULT flex-shrink-0" />
-                                  <span className="text-foreground-muted truncate">
-                                    {userData.location}
-                                  </span>
-                                </div>
-                              )}
 
                               {userData.profession && (
                                 <div className="flex items-center gap-2">
