@@ -1,148 +1,16 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import Link from "next/link";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import { cn } from "@/lib/utils";
-
-// type Question = {
-//   id: string;
-//   title: string;
-//   createdAt: string;
-//   isAnswered: boolean;
-//   user: { name: string };
-//   answers: any[];
-// };
-
-// export default function QuestionsPage() {
-//   const [questions, setQuestions] = useState<Question[]>([]);
-//   const [page, setPage] = useState(1);
-//   const [query, setQuery] = useState("");
-//   const [filter, setFilter] = useState("newest");
-//   const [total, setTotal] = useState(0);
-//   const [loading, setLoading] = useState(false);
-
-//   const limit = 10;
-
-//   const fetchQuestions = async () => {
-//     setLoading(true);
-//     const params = new URLSearchParams({
-//       page: String(page),
-//       limit: String(limit),
-//       query,
-//       filter,
-//     });
-
-//     const res = await fetch(`/api/questions?${params}`);
-//     const data = await res.json();
-//     setQuestions(data.questions);
-//     setTotal(data.total);
-//     setLoading(false);
-//   };
-
-//   useEffect(() => {
-//     fetchQuestions();
-//   }, [page, filter]);
-
-//   const totalPages = Math.ceil(total / limit);
-
-//   return (
-//     <div className="max-w-5xl mx-auto px-4 py-8 text-gray-100">
-//       <div className="flex justify-between items-center mb-6">
-//         <h1 className="text-2xl font-bold">All Questions</h1>
-//         <Link href="/questions/ask">
-//           <Button className="bg-blue-600 hover:bg-blue-700">Ask Question</Button>
-//         </Link>
-//       </div>
-
-//       <div className="flex gap-2 mb-4">
-//         <Input
-//           placeholder="Search questions..."
-//           value={query}
-//           onChange={(e) => setQuery(e.target.value)}
-//           className="w-full bg-gray-800 border-gray-700 text-white"
-//         />
-//         <Button
-//           onClick={() => {
-//             setPage(1);
-//             fetchQuestions();
-//           }}
-//         >
-//           Search
-//         </Button>
-//       </div>
-
-//       <div className="flex gap-2 mb-4">
-//         {["newest", "answered", "unanswered"].map((f) => (
-//           <Button
-//             key={f}
-//             variant={filter === f ? "default" : "secondary"}
-//             className={cn(
-//               filter === f ? "bg-blue-600 text-white" : "bg-gray-800",
-//               "capitalize"
-//             )}
-//             onClick={() => {
-//               setFilter(f);
-//               setPage(1);
-//             }}
-//           >
-//             {f}
-//           </Button>
-//         ))}
-//       </div>
-
-//       <div className="space-y-6">
-//         {loading ? (
-//           <p>Loading...</p>
-//         ) : (
-//           questions.map((q) => (
-//             <Link
-//               key={q.id}
-//               href={`/questions/${q.id}`}
-//               className="block p-4 rounded bg-gray-800 hover:bg-gray-700 transition"
-//             >
-//               <div className="flex justify-between items-center">
-//                 <h2 className="text-lg font-semibold">{q.title}</h2>
-//                 <span
-//                   className={cn(
-//                     "px-2 py-1 text-xs rounded",
-//                     q.isAnswered ? "bg-green-600" : "bg-yellow-600"
-//                   )}
-//                 >
-//                   {q.isAnswered ? "Answered" : "Unanswered"}
-//                 </span>
-//               </div>
-//               <p className="text-sm text-gray-400 mt-1">
-//                 Asked by {q.user.name} on {new Date(q.createdAt).toLocaleDateString()}
-//               </p>
-//               <p className="text-sm mt-1">{q.answers.length} Answers</p>
-//             </Link>
-//           ))
-//         )}
-//       </div>
-
-//       {/* Pagination Controls */}
-//       {totalPages > 1 && (
-//         <div className="flex justify-center mt-6 gap-2">
-//           {Array.from({ length: totalPages }, (_, i) => (
-//             <Button
-//               key={i}
-//               variant={page === i + 1 ? "default" : "secondary"}
-//               className={cn(page === i + 1 ? "bg-blue-600" : "bg-gray-800")}
-//               onClick={() => setPage(i + 1)}
-//             >
-//               {i + 1}
-//             </Button>
-//           ))}
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
 "use client";
 import { useEffect, useState } from "react";
-import { Search, Filter, ChevronLeft, ChevronRight, MessageCircle, Calendar, User, CheckCircle, Clock } from "lucide-react";
+import {
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  Calendar,
+  User,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
 import Link from "next/link";
 
 type Question = {
@@ -179,14 +47,14 @@ export default function QuestionsPage() {
 
       const res = await fetch(`/api/questions?${params}`);
       if (!res.ok) {
-        throw new Error('Failed to fetch questions');
+        throw new Error("Failed to fetch questions");
       }
-      
+
       const data = await res.json();
       setQuestions(data.questions);
       setTotal(data.total);
     } catch (error) {
-      console.error('Error fetching questions:', error);
+      console.error("Error fetching questions:", error);
       setQuestions([]);
       setTotal(0);
     } finally {
@@ -229,7 +97,7 @@ export default function QuestionsPage() {
     { value: "newest", label: "Newest", icon: Calendar },
     { value: "answered", label: "Answered", icon: CheckCircle },
     { value: "unanswered", label: "Unanswered", icon: Clock },
-    { value: "votes", label: "Most Votes", icon: MessageCircle }
+    { value: "votes", label: "Most Votes", icon: MessageCircle },
   ];
 
   const formatDate = (dateString: string) => {
@@ -237,7 +105,7 @@ export default function QuestionsPage() {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) return "1 day ago";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
@@ -250,10 +118,15 @@ export default function QuestionsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">All Questions</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              All Questions
+            </h1>
             <p className="text-foreground-muted mt-1">{total} questions</p>
           </div>
-          <Link href="/questions/ask" className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          <Link
+            href="/questions/ask"
+            className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+          >
             Ask Question
           </Link>
         </div>
@@ -269,7 +142,7 @@ export default function QuestionsPage() {
                 value={query}
                 onChange={handleQueryChange}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleSearch();
                   }
                 }}
@@ -318,70 +191,87 @@ export default function QuestionsPage() {
           ) : questions.length === 0 ? (
             <div className="text-center py-12">
               <MessageCircle className="mx-auto h-12 w-12 text-foreground-muted mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No questions found</h3>
-              <p className="text-foreground-muted">Try adjusting your search or filter criteria</p>
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                No questions found
+              </h3>
+              <p className="text-foreground-muted">
+                Try adjusting your search or filter criteria
+              </p>
             </div>
           ) : (
             questions.map((question) => (
-              <div
-                key={question.id}
-                className="bg-card-dark border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors cursor-pointer"
-              >
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {/* Stats */}
-                  <div className="flex sm:flex-col gap-4 sm:gap-2 text-center sm:min-w-[80px]">
-                    <div className="flex flex-col items-center">
-                      <span className="text-lg font-semibold text-foreground">{question.votes || 0}</span>
-                      <span className="text-xs text-foreground-muted">votes</span>
+              <Link href={`/questions/${question.id}`} key={question.id}>
+                <div className="bg-card-dark border border-zinc-800 rounded-xl py-3 mb-2 hover:border-zinc-700 transition-colors cursor-pointer">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Stats */}
+                    <div className="flex sm:flex-col gap-4 sm:gap-2 text-center sm:min-w-[80px]">
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-semibold text-foreground">
+                          {question.votes || 0}
+                        </span>
+                        <span className="text-xs text-foreground-muted">
+                          votes
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span
+                          className={`text-lg font-semibold ${
+                            question.isAnswered
+                              ? "text-green-500"
+                              : "text-foreground-muted"
+                          }`}
+                        >
+                          {question.answer?.length}
+                        </span>
+                        <span className="text-xs text-foreground-muted">
+                          answers
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <span className={`text-lg font-semibold ${question.isAnswered ? 'text-green-500' : 'text-foreground-muted'}`}>
-                        {question.answer.length}
-                      </span>
-                      <span className="text-xs text-foreground-muted">answers</span>
-                    </div>
-                  </div>
 
-                  {/* Question Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <h2 className="text-lg font-semibold text-foreground hover:text-primary transition-colors line-clamp-2">
-                        {question.title}
-                      </h2>
-                      {question.isAnswered && (
-                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    {/* Question Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <h2 className="text-lg font-semibold text-foreground hover:text-primary transition-colors line-clamp-2">
+                          {question.title}
+                        </h2>
+                        {question.isAnswered && (
+                          <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        )}
+                      </div>
+
+                      {/* Tags */}
+                      {question.tags && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {question.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       )}
-                    </div>
 
-                    {/* Tags */}
-                    {question.tags && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {question.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium"
-                          >
-                            {tag}
+                      {/* Meta Info */}
+                      <div className="flex items-center gap-4 text-sm text-foreground-muted">
+                        <div className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          <span>asked by</span>
+                          <span className="text-primary font-medium">
+                            {question.user.userName}
                           </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Meta Info */}
-                    <div className="flex items-center gap-4 text-sm text-foreground-muted">
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        <span>asked by</span>
-                        <span className="text-primary font-medium">{question.user.userName}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{formatDate(question.createdAt)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(question.createdAt)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>
