@@ -40,3 +40,39 @@ export async function GET(
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+
+    const body = await req.json();
+    const {userId, questionId, description } = body;
+
+    console.log("Received data:", body);
+
+    if (!questionId || !description || !userId) {
+      return NextResponse.json(
+        { error: "Missing userId, questionId, or description" },
+        { status: 400 }
+      );
+    }
+
+    const notification = await prisma.notification.create({
+      data: {
+        userId,
+        questionId,
+        description,
+      },
+    });
+
+    return NextResponse.json(
+      { message: "Notification created", notification },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error("POST /api/users/:userId/notification error:", error);
+    return NextResponse.json(
+      { error: error.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
