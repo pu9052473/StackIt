@@ -9,7 +9,16 @@ import { JSONContent } from "@tiptap/react";
 import { ReadOnlyViewer } from "@/components/editor/ViewOnlyContent";
 import TiptapEditor from "@/components/editor/RichTextEditor";
 import { useQuery } from "@tanstack/react-query";
-import { Edit, Calendar, User, MessageCircle, Loader2 } from "lucide-react";
+import {
+  Edit,
+  Calendar,
+  User,
+  MessageCircle,
+  Loader2,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 // lib/fetchAnswers.ts
@@ -22,6 +31,21 @@ export const fetchAnswersByQuestionId = async (questionId: string | number) => {
   return data.answers || [];
 };
 
+// lib/fetchComments.ts
+export const fetchCommentsByAnswerId = async (
+  answerId: string | number,
+  questionId: string | number
+) => {
+  const res = await fetch(
+    `/api/questions/${questionId}/answer/comment?answerId=${answerId}`
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch comments");
+  }
+  const data = await res.json();
+  return data.comments || [];
+};
+
 export default function QuestionDetailPage() {
   const { questionId } = useParams();
   const { user } = useAuth();
@@ -29,8 +53,22 @@ export default function QuestionDetailPage() {
   const [question, setQuestion] = useState<any>(null);
   const [editorContent, setEditorContent] = useState<JSONContent | undefined>();
   const [loading, setLoading] = useState(false);
-  const [editingAnswer, setEditingAnswer] = useState<any>(null); // Store the entire answer object
+  const [editingAnswer, setEditingAnswer] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Comment states
+  const [commentEditorContent, setCommentEditorContent] = useState<
+    JSONContent | undefined
+  >();
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [editingComment, setEditingComment] = useState<any>(null);
+  const [isCommentEditing, setIsCommentEditing] = useState(false);
+  const [activeCommentAnswerId, setActiveCommentAnswerId] = useState<
+    number | null
+  >(null);
+  const [expandedComments, setExpandedComments] = useState<Set<number>>(
+    new Set()
+  );
 
   useEffect(() => {
     fetch(`/api/questions/${questionId}`)
@@ -48,6 +86,25 @@ export default function QuestionDetailPage() {
     queryKey: ["answers", questionId],
     queryFn: () => fetchAnswersByQuestionId(questionId as string),
     enabled: !!questionId,
+    staleTime: 0,
+  });
+
+  // Comments query - fetch comments for expanded answers
+  const { data: allComments, refetch: refetchComments } = useQuery({
+    queryKey: ["comments", Array.from(expandedComments)],
+    queryFn: async () => {
+      const commentPromises = Array.from(expandedComments).map((answerId) =>
+        fetchCommentsByAnswerId(answerId, questionId as string).then(
+          (comments) => ({ answerId, comments })
+        )
+      );
+      const results = await Promise.all(commentPromises);
+      return results.reduce((acc, { answerId, comments }) => {
+        acc[answerId] = comments;
+        return acc;
+      }, {} as Record<number, any[]>);
+    },
+    enabled: expandedComments.size > 0,
     staleTime: 0,
   });
 
@@ -79,24 +136,67 @@ export default function QuestionDetailPage() {
           : "Answer posted successfully"
       );
 
-      // Reset state
       setEditorContent(undefined);
       setEditingAnswer(null);
       setIsEditing(false);
-
-      // ✅ Trigger refetch to get updated answers
       await refetch();
     } catch (error) {
       console.error("handleAnswerSubmit error:", error);
       toast.error("Failed to submit your answer");
     } finally {
       setLoading(false);
-      refetch();
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!commentEditorContent || !activeCommentAnswerId) return;
+
+    setCommentLoading(true);
+
+    try {
+      const url = editingComment
+        ? `/api/questions/${questionId}/answer/comment?commentId=${editingComment.id}&answerId=${activeCommentAnswerId}`
+        : `/api/questions/${questionId}/answer/comment?answerId=${activeCommentAnswerId}`;
+
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: commentEditorContent }),
+      });
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error("API error response:", result);
+        toast.error(result.message || "Something went wrong");
+        return;
+      }
+      toast.success(
+        editingComment
+          ? "Comment updated successfully"
+          : "Comment posted successfully"
+      );
+
+      setCommentEditorContent(undefined);
+      setEditingComment(null);
+      setIsCommentEditing(false);
+      setActiveCommentAnswerId(null);
+      await refetchComments();
+
+      // ✅ Collapse comments section after successful post/update
+      setExpandedComments((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(activeCommentAnswerId); // Collapse after action
+        return newSet;
+      });
+    } catch (error) {
+      console.error("handleCommentSubmit error:", error);
+      toast.error("Failed to submit your comment");
+    } finally {
+      setCommentLoading(false);
     }
   };
 
   const handleEditAnswer = (answer: any) => {
-    // Store the answer object in state instead of URL
     setEditingAnswer(answer);
     setEditorContent(answer.description);
     setIsEditing(true);
@@ -106,6 +206,46 @@ export default function QuestionDetailPage() {
     setEditorContent(undefined);
     setEditingAnswer(null);
     setIsEditing(false);
+  };
+
+  const handleAddComment = (answerId: number) => {
+    setActiveCommentAnswerId(answerId);
+    setCommentEditorContent(undefined);
+    setEditingComment(null);
+    setIsCommentEditing(true);
+    // Auto-expand comments when adding a comment
+    setExpandedComments((prev) => new Set([...Array.from(prev), answerId]));
+  };
+
+  const handleEditComment = (comment: any) => {
+    setEditingComment(comment);
+    setCommentEditorContent(comment.description);
+    setIsCommentEditing(true);
+    setActiveCommentAnswerId(comment.answerId);
+  };
+
+  const handleCancelCommentEdit = () => {
+    setCommentEditorContent(undefined);
+    setEditingComment(null);
+    setIsCommentEditing(false);
+    setActiveCommentAnswerId(null);
+  };
+
+  const toggleComments = (answerId: number) => {
+    setExpandedComments((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(answerId)) {
+        newSet.delete(answerId);
+      } else {
+        newSet.add(answerId);
+      }
+      return newSet;
+    });
+    refetchComments();
+  };
+
+  const getCommentsForAnswer = (answerId: number) => {
+    return allComments?.[answerId] || [];
   };
 
   if (!question) {
@@ -175,11 +315,11 @@ export default function QuestionDetailPage() {
               <p>No answers yet. Be the first to answer!</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {answers?.map((ans: any, idx: number) => (
                 <div
                   key={ans.id || idx}
-                  className={`bg-background rounded-lg border p-4 transition-colors ${
+                  className={`bg-background rounded-lg border p-4 sm:p-6 transition-colors ${
                     editingAnswer?.id === ans.id
                       ? "border-primary/50 bg-primary/5"
                       : "border-border hover:border-primary/30"
@@ -214,9 +354,185 @@ export default function QuestionDetailPage() {
                     )}
                   </div>
 
-                  <div className="prose dark:prose-invert max-w-none">
+                  <div className="prose dark:prose-invert max-w-none mb-4">
                     <ReadOnlyViewer content={ans.description} />
                   </div>
+
+                  {/* Answer Actions */}
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 border-t border-border pt-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-text-secondary hover:text-text-primary hover:bg-border/50 justify-start sm:justify-center"
+                      onClick={() => handleAddComment(ans.id)}
+                      disabled={isCommentEditing}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Add Comment
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-text-secondary hover:text-text-primary hover:bg-border/50 justify-start sm:justify-center"
+                      onClick={() => toggleComments(ans.id)}
+                    >
+                      {expandedComments.has(ans.id) ? (
+                        <ChevronUp className="w-4 h-4 mr-2" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 mr-2" />
+                      )}
+                      {expandedComments.has(ans.id) ? "Hide" : "Show"} Comments
+                      {getCommentsForAnswer(ans.id).length > 0 && (
+                        <span className="ml-1 text-xs">
+                          ({getCommentsForAnswer(ans.id).length})
+                        </span>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Comments Section */}
+                  {expandedComments.has(ans.id) && (
+                    <div className="mt-4 border-t border-border pt-4">
+                      {commentLoading ? (
+                        <div className="flex justify-center py-4">
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                        </div>
+                      ) : (
+                        <>
+                          {getCommentsForAnswer(ans.id).length === 0 ? (
+                            <div className="text-sm text-center text-text-secondary py-3">
+                              No comments yet. Be the first to comment.
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {getCommentsForAnswer(ans.id).map(
+                                (comment: any) => (
+                                  <div
+                                    key={comment.id}
+                                    className={`bg-card-dark rounded-lg border p-3 sm:p-4 transition-colors ${
+                                      editingComment?.id === comment.id
+                                        ? "border-primary/50 bg-primary/5"
+                                        : "border-border/50"
+                                    }`}
+                                  >
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-text-secondary">
+                                        <div className="flex items-center gap-2">
+                                          <User className="w-3 h-3" />
+                                          <span>
+                                            {comment.user?.userName ||
+                                              "Anonymous"}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Calendar className="w-3 h-3" />
+                                          <span>
+                                            {format(
+                                              new Date(comment.createdAt),
+                                              "PPP"
+                                            )}
+                                          </span>
+                                        </div>
+                                        {comment.updatedAt &&
+                                          comment.updatedAt !==
+                                            comment.createdAt && (
+                                            <span className="text-xs text-primary">
+                                              (edited)
+                                            </span>
+                                          )}
+                                      </div>
+
+                                      {user?.id === comment.userId && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-xs h-6 px-2 w-fit"
+                                          onClick={() =>
+                                            handleEditComment(comment)
+                                          }
+                                          disabled={isCommentEditing}
+                                        >
+                                          <Edit className="w-3 h-3 mr-1" />
+                                          {editingComment?.id === comment.id
+                                            ? "Editing..."
+                                            : "Edit"}
+                                        </Button>
+                                      )}
+                                    </div>
+
+                                    <div className="prose dark:prose-invert max-w-none prose-sm">
+                                      <ReadOnlyViewer
+                                        content={comment.description}
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Comment Editor */}
+                      {activeCommentAnswerId === ans.id && (
+                        <div className="mt-4 border-t border-border pt-4">
+                          <div className="bg-card-dark rounded-lg border border-border p-3 sm:p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-base font-medium text-text-primary">
+                                {editingComment
+                                  ? "Edit Comment"
+                                  : "Add Comment"}
+                              </h4>
+                            </div>
+
+                            <div className="mb-3">
+                              <TiptapEditor
+                                key={editingComment?.id || `comment-${ans.id}`}
+                                content={commentEditorContent}
+                                onChange={(content) =>
+                                  setCommentEditorContent(content)
+                                }
+                              />
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <Button
+                                size="sm"
+                                className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
+                                disabled={
+                                  commentLoading || !commentEditorContent
+                                }
+                                onClick={handleCommentSubmit}
+                              >
+                                {commentLoading ? (
+                                  <>
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    {editingComment
+                                      ? "Updating..."
+                                      : "Posting..."}
+                                  </>
+                                ) : editingComment ? (
+                                  "Update Comment"
+                                ) : (
+                                  "Post Comment"
+                                )}
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-border hover:bg-border"
+                                onClick={handleCancelCommentEdit}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -233,7 +549,7 @@ export default function QuestionDetailPage() {
 
           <div className="mb-4">
             <TiptapEditor
-              key={editingAnswer?.id || "new-answer"} // Force re-render when switching between edit/new
+              key={editingAnswer?.id || "new-answer"}
               content={editorContent}
               onChange={(content) => setEditorContent(content)}
             />
