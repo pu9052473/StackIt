@@ -12,27 +12,24 @@ import {
   Clock,
 } from "lucide-react";
 import Link from "next/link";
+import { Prisma, Question } from "@prisma/client";
 
-type Question = {
-  id: string;
-  title: string;
-  createdAt: string;
-  isAnswered: boolean;
-  user: { userName: string };
-  answer: any[];
-  tags?: string[];
-  votes?: number;
-};
+type QuestionWithRelation = Prisma.QuestionGetPayload<{
+  include: {
+    user: { select: { userName: true } };
+    answer_AnswerToQuestion: true;
+  };
+}>;
 
 export default function QuestionsPage() {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<QuestionWithRelation[]>([]);
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("newest");
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-
+console.log("questions", questions)
   const limit = 10;
 
   const fetchQuestions = async () => {
@@ -207,24 +204,10 @@ export default function QuestionsPage() {
                     <div className="flex sm:flex-col gap-4 sm:gap-2 text-center sm:min-w-[80px]">
                       <div className="flex flex-col items-center">
                         <span className="text-lg font-semibold text-foreground">
-                          {question.votes || 0}
+                          {question.answer_AnswerToQuestion.length || 0}
                         </span>
                         <span className="text-xs text-foreground-muted">
-                          votes
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span
-                          className={`text-lg font-semibold ${
-                            question.isAnswered
-                              ? "text-green-500"
-                              : "text-foreground-muted"
-                          }`}
-                        >
-                          {question.answer?.length}
-                        </span>
-                        <span className="text-xs text-foreground-muted">
-                          answers
+                          Answers
                         </span>
                       </div>
                     </div>
@@ -241,9 +224,9 @@ export default function QuestionsPage() {
                       </div>
 
                       {/* Tags */}
-                      {question.tags && (
+                      {question.tag && (
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {question.tags.map((tag) => (
+                          {question.tag.map((tag) => (
                             <span
                               key={tag}
                               className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium"
@@ -265,7 +248,7 @@ export default function QuestionsPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          <span>{formatDate(question.createdAt)}</span>
+                          <span>{formatDate(String(question.createdAt))}</span>
                         </div>
                       </div>
                     </div>

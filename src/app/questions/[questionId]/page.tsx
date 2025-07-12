@@ -19,9 +19,12 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 
 // lib/fetchAnswers.ts
 export const fetchAnswersByQuestionId = async (questionId: string | number) => {
@@ -117,7 +120,31 @@ export default function QuestionDetailPage() {
     enabled: expandedComments.size > 0,
     staleTime: 0,
   });
-
+  const handleVote = async (
+    answerId: number,
+    type: "up" | "down",
+    refetch: () => void
+  ) => {
+    try {
+      const res = await axios.patch(
+        `/api/questions/${questionId}/answer/vote?answerId=${answerId}`,
+        {
+          voteType: type 
+        }
+      );
+      if (res.status !== 200) {
+        throw new Error(res.data.message??"Failed to vote");
+      }
+      toast.success("Voted successfully");
+      refetch();
+    } catch (error) {
+      if(axios.isAxiosError(error) && error.response){
+        toast.error(error.response.data.message);
+      }
+      console.error(error);
+    }
+  };
+  console.log(user)
   const handleAnswerSubmit = async () => {
     if (!editorContent) return;
 
@@ -497,6 +524,28 @@ export default function QuestionDetailPage() {
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
                         <span>{ans.user?.userName || "Anonymous"}</span>
+                        <div className="flex items-center gap-2">
+                          <>
+                            <button
+                              disabled={user?.id == ans.userId}
+                              onClick={() => handleVote(ans.id, "up", refetch)}
+                              className="flex items-center text-green-600 hover:text-green-800"
+                            >
+                              <ThumbsUp className="w-4 h-4 mr-1" />{" "}
+                              {`${ans.upVote ?? 0}`}
+                            </button>
+                            <button
+                              disabled={user?.id == ans.userId}
+                              onClick={() =>
+                                handleVote(ans.id, "down", refetch)
+                              }
+                              className="flex items-center text-red-600 hover:text-red-800"
+                            >
+                              <ThumbsDown className="w-4 h-4 mr-1" />{" "}
+                              {`${ans.downVote ?? 0}`}
+                            </button>
+                          </>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
