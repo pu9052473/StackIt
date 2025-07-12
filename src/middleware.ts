@@ -8,6 +8,9 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/questions", request.url));
+  }
   // Public routes accessible without login
   const publicRoutes = [
     "/",

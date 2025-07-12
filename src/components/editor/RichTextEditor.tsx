@@ -19,7 +19,6 @@ import { UploadButton } from "@uploadthing/react";
 import type { OurFileRouter } from "@/lib/uploadThing";
 
 import { EmojiPicker } from "./EmojiPicker";
-import { SidebarSeparator } from "../ui/sidebar";
 // import "@/styles/editor.css"; // Optional custom styles
 
 type Props = {

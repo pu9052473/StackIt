@@ -1,19 +1,25 @@
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
-import Image from '@tiptap/extension-image'
-import Emoji from '@tiptap/extension-emoji'
-import TextAlign from '@tiptap/extension-text-align'
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import Image from "@tiptap/extension-image";
+import Emoji from "@tiptap/extension-emoji";
+import BulletList from "@tiptap/extension-bullet-list";
+import OrderedList from "@tiptap/extension-ordered-list";
+import ListItem from "@tiptap/extension-list-item";
 
 export const editorExtensions = [
-  StarterKit,
+  StarterKit.configure({
+    bulletList: false,
+    orderedList: false,
+    listItem: false,
+  }),
   Underline,
-  Link.configure({
-    openOnClick: true,
+  TextAlign.configure({
+    types: ["heading", "paragraph"],
   }),
   Image,
   Emoji,
-  TextAlign.configure({
-    types: ['heading', 'paragraph'],
-  }),
-]
+  BulletList,
+  OrderedList,
+  ListItem,
+];

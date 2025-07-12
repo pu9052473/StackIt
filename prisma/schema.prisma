@@ -33,7 +33,7 @@ model Question {
   updatedAt       DateTime       @updatedAt
   correctAnswerId Int?           @unique
   isAnswered      Boolean        @default(false)
-  description     Json[]
+  description     Json
   Notification    Notification[]
   correctAnswer   Answer?        @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
   user            User           @relation("question_to_user", fields: [userId], references: [id])
@@ -46,7 +46,7 @@ model Answer {
   questionId              Int
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt
-  description             Json[]
+  description             Json
   user                    User       @relation("answer_to_user", fields: [userId], references: [id])
   comment                 Comment[]
   correctAnswerOfQuestion Question?  @relation("CorrectAnswer")
@@ -59,7 +59,7 @@ model Comment {
   answerId    Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  description Json[]
+  description Json
   answer      Answer   @relation(fields: [answerId], references: [id])
   user        User     @relation("comment_to_user", fields: [userId], references: [id])
 }

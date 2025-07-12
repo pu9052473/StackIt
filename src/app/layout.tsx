@@ -1,5 +1,4 @@
 // app/layout.tsx
-import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "react-hot-toast";
@@ -26,7 +25,6 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             {/* <ProtectedRoute> */}
-            <TooltipProvider>
               <ThemeProvider
                 attribute="class"
                 defaultTheme="system"
@@ -42,7 +40,6 @@ export default function RootLayout({
                     </main>
                 </div>
               </ThemeProvider>
-            </TooltipProvider>
             {/* </ProtectedRoute> */}
           </AuthProvider>
         </QueryProvider>

@@ -1,43 +1,87 @@
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function PATCH(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const questionId = searchParams.get("questionId");
-  const data = await request.json();
-  if (!data.tags || data.tags.length === 0) {
-    return NextResponse.json(
-      { message: "atleast One Tag is Required" },
-      { status: 400 }
-    );
-  }
-  if (!data.description) {
-    return NextResponse.json(
-      { message: "Question Description is Required" },
-      { status: 400 }
-    );
-  }
-  if (!data.title) {
-    return NextResponse.json(
-      { message: "Question Title is Required" },
-      { status: 400 }
-    );
-  }
-  if (questionId) {
-    const updatedQuestion = await prisma.question.update({
-      where: { id: Number(questionId) },
-      data,
+  try {
+    const cookie = cookies();
+    const userC = cookie.get("stackit_user_data");
+    const user = userC ? JSON.parse(userC.value) : null;
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    console.log("user: ", user);
+    const { searchParams } = new URL(request.url);
+    const questionId = searchParams.get("questionId");
+    const data = await request.json();
+    console.log("PATCH question payload:", {
+      title: data.title,
+      tags: data.tags,
+      description: JSON.stringify(data.description),
     });
+
+    if (!data.title) {
+      return NextResponse.json(
+        { message: "Question Title is Required" },
+        { status: 400 }
+      );
+    }
+
+    if (!data.description || typeof data.description !== "object") {
+      return NextResponse.json(
+        { message: "Question Description must be a valid JSON object" },
+        { status: 400 }
+      );
+    }
+
+    if (!data.tags || !Array.isArray(data.tags) || data.tags.length === 0) {
+      return NextResponse.json(
+        { message: "At least one tag is required" },
+        { status: 400 }
+      );
+    }
+    const parsedDescription =
+      typeof data.description === "string"
+        ? JSON.parse(data.description)
+        : data.description;
+
+    if (questionId) {
+      const updatedQuestion = await prisma.question.update({
+        where: { id: Number(questionId) },
+        data: {
+          title: data.title,
+          description: parsedDescription,
+          tag: data.tags,
+        },
+      });
+
+      return NextResponse.json(
+        { message: "Question updated", updatedQuestion },
+        { status: 200 }
+      );
+    } else {
+      const createdQuestion = await prisma.question.create({
+        data: {
+          title: data.title,
+          description: parsedDescription,
+          tag: data.tags,
+          userId: user.id,
+        },
+      });
+
+      return NextResponse.json(
+        { message: "Question created", question: createdQuestion },
+        { status: 201 }
+      );
+    }
+  } catch (error: any) {
+    console.error("Error in PATCH /api/questions:", error);
+
     return NextResponse.json(
-      {
-        message: `${questionId ? "Question updated" : "Question created"}`,
-        updatedQuestion,
-      },
-      { status: 200 }
+      { message: "Internal server error", error: error.message },
+      { status: 500 }
     );
-  } else {
-    const createdQuestion = await prisma.question.create({ data: { ...data } });
-    return NextResponse.json(createdQuestion, { status: 201 });
   }
 }
 

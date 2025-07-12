@@ -13,7 +13,7 @@ const supabase = createBrowserClient(
 );
 
 // Cookie configuration
-const USER_COOKIE_NAME = "ideocity_user_data";
+const USER_COOKIE_NAME = "stackit_user_data";
 const COOKIE_EXPIRY_DAYS = 7;
 type UserWithRelations = Prisma.UserGetPayload<{}>;
 

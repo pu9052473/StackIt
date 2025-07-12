@@ -10,7 +10,7 @@ import { ReadOnlyViewer } from "@/components/editor/ViewOnlyContent";
 import TiptapEditor from "@/components/editor/RichTextEditor";
 
 export default function QuestionDetailPage() {
-  const { id } = useParams();
+  const { questionId } = useParams();
   const { user } = useAuth();
 
   const [question, setQuestion] = useState<any>(null);
@@ -19,18 +19,18 @@ export default function QuestionDetailPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/questions/${id}`)
+    fetch(`/api/questions/${questionId}`)
       .then((res) => res.json())
       .then((data) => {
         setQuestion(data.question);
-        setAnswers(data.answers);
+        setAnswers(data.question.answer);
       });
-  }, [id]);
-
+  }, [questionId]);
+  console.log("question: ", question);
   const handleAnswerSubmit = async () => {
     if (!editorContent) return;
     setLoading(true);
-    const res = await fetch(`/api/questions/${id}/answer`, {
+    const res = await fetch(`/api/questions/${questionId}/answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: editorContent }),
@@ -48,29 +48,36 @@ export default function QuestionDetailPage() {
       <div className="mb-8 border-b pb-6">
         <h1 className="text-2xl font-bold mb-2">{question.title}</h1>
         <div className="text-sm text-gray-400">
-          Asked by {question.user?.userName} on {format(new Date(question.createdAt), "PPP")}
+          Asked by {question.user?.userName} on{" "}
+          {format(new Date(question.createdAt), "PPP")}
         </div>
         <div className="mt-4 prose dark:prose-invert">
-          {Array.isArray(question.description) &&
-            question.description.map((block: any, index: number) => (
-              <ReadOnlyViewer key={index} content={block} />
-            ))}
+          <ReadOnlyViewer content={question.description} />
         </div>
 
         {user?.id === question.userId && (
           <div className="mt-4">
-            <Button variant="outline" className="bg-gray-800" onClick={() => alert("Edit feature pending")}>Edit Question</Button>
+            <Button
+              variant="outline"
+              className="bg-gray-800"
+              onClick={() => alert("Edit feature pending")}
+            >
+              Edit Question
+            </Button>
           </div>
         )}
       </div>
 
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">Answers ({answers.length})</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          Answers ({answers.length})
+        </h2>
         <div className="space-y-4">
           {answers.map((ans, idx) => (
             <div key={idx} className="p-4 border rounded-lg bg-gray-800">
               <div className="text-sm text-gray-300 mb-1">
-                {ans.user?.userName} answered on {format(new Date(ans.createdAt), "PPP")}
+                {ans.user?.userName} answered on{" "}
+                {format(new Date(ans.createdAt), "PPP")}
               </div>
               <div className="prose dark:prose-invert">
                 <ReadOnlyViewer content={ans.description} />
