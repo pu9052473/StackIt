@@ -1,0 +1,168 @@
+/* src/app/globals.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Custom animation delays */
+  .animation-delay-150 {
+    animation-delay: 150ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-450 {
+    animation-delay: 450ms;
+    .dark {
+      --sidebar-background: 240 5.9% 10%;
+      --sidebar-foreground: 240 4.8% 95.9%;
+      --sidebar-primary: 224.3 76.3% 48%;
+      --sidebar-primary-foreground: 0 0% 100%;
+      --sidebar-accent: 240 3.7% 15.9%;
+      --sidebar-accent-foreground: 240 4.8% 95.9%;
+      --sidebar-border: 240 3.7% 15.9%;
+      --sidebar-ring: 217.2 91.2% 59.8%;
+      --background: 0 0% 3.9%;
+      --foreground: 0 0% 98%;
+      --card: 0 0% 3.9%;
+      --card-foreground: 0 0% 98%;
+      --popover: 0 0% 3.9%;
+      --popover-foreground: 0 0% 98%;
+      --primary: 0 0% 98%;
+      --primary-foreground: 0 0% 9%;
+      --secondary: 0 0% 14.9%;
+      --secondary-foreground: 0 0% 98%;
+      --muted: 0 0% 14.9%;
+      --muted-foreground: 0 0% 63.9%;
+      --accent: 0 0% 14.9%;
+      --accent-foreground: 0 0% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 0 0% 14.9%;
+      --input: 0 0% 14.9%;
+      --ring: 0 0% 83.1%;
+      --chart-1: 220 70% 50%;
+      --chart-2: 160 60% 45%;
+      --chart-3: 30 80% 55%;
+      --chart-4: 280 65% 60%;
+      --chart-5: 340 75% 55%;
+    }
+  }
+
+  @layer base {
+    * {
+      @apply border-border;
+    }
+    body {
+      @apply bg-background;
+    }
+  }
+}
+
+/* Custom Scrollbar Styles */
+/* Webkit-based browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 1px; /* Very thin width */
+  height: 1px; /* For horizontal scrollbars */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Invisible track */
+  border-radius: 1px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a; /* Dark theme border color */
+  border-radius: 1px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #71717a; /* Muted color on hover */
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: #71717a; /* Muted color for dark mode */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa; /* Lighter muted on hover */
+  }
+}
+
+/* Light mode scrollbar */
+@media (prefers-color-scheme: light) {
+  ::-webkit-scrollbar-thumb {
+    background: #e4e4e7; /* Light border color */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #71717a; /* Muted color on hover */
+  }
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #71717a transparent;
+}
+
+/* Custom scrollbar for specific containers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 1px; /* Even thinner for specific elements */
+  height: 1px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #8b55f6; /* Primary color variant */
+  border-radius: 1px;
+  opacity: 0.6;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6d2ef0; /* Primary 600 on hover */
+  opacity: 1;
+}
+
+/* Hide scrollbar completely but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Ultra-thin scrollbar for compact areas */
+.scrollbar-ultra-thin::-webkit-scrollbar {
+  width: 1px;
+  height: 1px;
+}
+
+.scrollbar-ultra-thin::-webkit-scrollbar-thumb {
+  background: #8b55f6;
+  border-radius: 1px;
+  opacity: 0.4;
+}
+
+.scrollbar-ultra-thin::-webkit-scrollbar-thumb:hover {
+  opacity: 0.8;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
