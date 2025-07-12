@@ -167,6 +167,7 @@ export default function QuestionDetailPage() {
         toast.error(result.message || "Something went wrong");
         return;
       }
+
       toast.success(
         editingAnswer
           ? "Answer updated successfully"
@@ -177,11 +178,31 @@ export default function QuestionDetailPage() {
       setEditingAnswer(null);
       setIsEditing(false);
       await refetch();
+
+      try {
+        console.log("come in answer not")
+        await fetch(`/api/notification`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: question.userId,
+            questionId: question.id,
+            description: `${user?.userName || "Someone"} ${
+              editingAnswer?.id ? "updated" : "posted"
+            } an answer on your question "${question.title}"`,
+          }),
+        });
+      } catch (notifError) {
+        console.error("Failed to send notification:", notifError);
+      }
     } catch (error) {
       console.error("handleAnswerSubmit error:", error);
       toast.error("Failed to submit your answer");
     } finally {
       setLoading(false);
+      setEditorContent(undefined);
+      setEditingAnswer(null);
+      setIsEditing(false);
     }
   };
 
@@ -219,12 +240,30 @@ export default function QuestionDetailPage() {
       setActiveCommentAnswerId(null);
       await refetchComments();
 
+      try {
+        console.log("come in comment not")
+        await fetch(`/api/notification`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: question.userId,
+            questionId: question.id,
+            description: `${user?.userName || "Someone"} ${
+              editingComment?.id ? "updated comment on" : "commented on"
+            } an answer to your question "${question.title}"`,
+          }),
+        });
+      } catch (notifError) {
+        console.error("Failed to send notification:", notifError);
+      }
+
       // ✅ Collapse comments section after successful post/update
       setExpandedComments((prev) => {
         const newSet = new Set(prev);
         newSet.delete(activeCommentAnswerId); // Collapse after action
         return newSet;
       });
+
     } catch (error) {
       console.error("handleCommentSubmit error:", error);
       toast.error("Failed to submit your comment");
