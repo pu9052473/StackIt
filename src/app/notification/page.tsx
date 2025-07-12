@@ -89,7 +89,7 @@ const mockNotifications = [
   },
 ];
 const fetchNotifications = async (userId: string) => {
-  const response = await fetch(`/api/users/${userId}/notification`);
+  const response = await fetch(`/api/notification?userId=${userId}`,);
 
   if (!response.ok) {
     throw new Error("Failed to fetch user data");

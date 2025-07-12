@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
 ) {
   try {
     const cookie = cookies();
@@ -14,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { userId } = params;
+    const userId = req.nextUrl.searchParams.get("userId");
 
     if (!userId) {
       return NextResponse.json(
@@ -43,7 +42,6 @@ export async function GET(
 
 export async function POST(req: NextRequest) {
   try {
-
     const body = await req.json();
     const {userId, questionId, description } = body;
 
