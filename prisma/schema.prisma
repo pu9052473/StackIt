@@ -25,46 +25,49 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  answer   Answer[]   @relation("answer_to_user")
-  question Question[] @relation("question_to_user")
-  comment  Comment[]  @relation("comment_to_user")
+  answer       Answer[]       @relation("answer_to_user")
+  question     Question[]     @relation("question_to_user")
+  comment      Comment[]      @relation("comment_to_user")
   notification Notification[] @relation("notification_to_user")
 }
 
 model Question {
-  id          Int      @id @default(autoincrement())
-  userId      String
-  title       String
-  description String
-  tag         String[]
+  id              Int      @id @default(autoincrement())
+  userId          String
+  title           String
+  description     Json[]
+  tag             String[]
+  isAnswered      Boolean  @default(false)
+  correctAnswerId Int?     @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User     @relation("question_to_user", fields: [userId], references: [id])
-  answer Answer[]
+  user          User     @relation("question_to_user", fields: [userId], references: [id])
+  answer        Answer[]
+  correctAnswer Answer?  @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
 }
 
 model Answer {
   id          Int    @id @default(autoincrement())
   userId      String
   questionId  Int
-  description String
+  description Json[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User     @relation("answer_to_user", fields: [userId], references: [id])
-  question Question @relation(fields: [questionId], references: [id])
+  user                    User      @relation("answer_to_user", fields: [userId], references: [id])
+  correctAnswerOfQuestion Question? @relation("CorrectAnswer")
 
-  comment Comment[]
+  comment  Comment[]
+  Question Question[]
 }
 
 model Comment {
   id          Int    @id @default(autoincrement())
   userId      String
   answerId    Int
-  description String
+  description Json[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

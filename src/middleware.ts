@@ -15,13 +15,14 @@ export async function middleware(request: NextRequest) {
     "/signup",
     "/callback",
     "/api/auth/session",
-    "/about",
-    "/privacypolicy",
-    "/termsandconditions",
-    "/usepolicy",
+    "/questions",
+    "/questions/ask",
+    "/api/questions",
+    "/api/questions/ask",
     "/api/auth/callback",
+    "/api/uploadthing",
   ];
-  const isPublicApiUserRoute = pathname.startsWith("/api/users");
+  const isPublicApiUserRoute = pathname.startsWith("/api");
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
 
@@ -29,11 +30,14 @@ export async function middleware(request: NextRequest) {
   if (user && isAuthPage) {
     return NextResponse.redirect(
       new URL(
-        user.user_metadata.role == "USER" ? "/projects" : "/admin",
+        user.user_metadata.role == "USER" ? "/questions" : "/admin",
         request.url
       )
     );
   }
+  // if (pathname.startsWith("/")) {
+  //   return NextResponse.redirect(new URL("/questions", request.url));
+  // }
   // If the user is not logged in and is not visiting a public route or public API route, redirect to login
   if (!user && !publicRoutes.includes(pathname) && !isPublicApiUserRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -41,11 +45,10 @@ export async function middleware(request: NextRequest) {
 
   // If user tries to access /admin but is not an admin
   if (pathname.startsWith("/admin") && user?.user_metadata.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/projects", request.url));
+    return NextResponse.redirect(new URL("/questions", request.url));
   }
 
   return NextResponse.next();
-
 }
 
 export const config = {
