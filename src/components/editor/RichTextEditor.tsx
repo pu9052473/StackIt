@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useEditor, EditorContent, JSONContent } from "@tiptap/react";
 import { editorExtensions } from "@/lib/editor/extensions";
 import {
@@ -14,6 +14,7 @@ import {
   ImageIcon,
   List,
   ListOrdered,
+  Loader2,
 } from "lucide-react";
 import { UploadButton } from "@uploadthing/react";
 import type { OurFileRouter } from "@/lib/uploadThing";
@@ -27,6 +28,8 @@ type Props = {
 };
 
 const TiptapEditor = ({ content, onChange }: Props) => {
+  const [uploading, setUploading] = useState(false);
+
   const editor = useEditor({
     extensions: editorExtensions,
     content,
@@ -117,19 +120,35 @@ const TiptapEditor = ({ content, onChange }: Props) => {
           <AlignRight size={18} />
         </button>
 
-        <UploadButton<OurFileRouter, "editorImage">
-          endpoint="editorImage"
-          onClientUploadComplete={(res) => {
-            if (res && res[0].url) insertImage(res[0].url);
-          }}
-          onUploadError={(err) => alert(`Upload error: ${err.message}`)}
-          appearance={{
-            button: "p-1 hover:bg-gray-800 rounded flex items-center",
-          }}
-          content={{
-            button: <ImageIcon size={18} />,
-          }}
-        />
+        <div className="relative">
+          {uploading ? (
+            <div className="p-1 rounded flex items-center animate-spin">
+              <Loader2 size={18} />
+            </div>
+          ) : (
+            <UploadButton<OurFileRouter, "editorImage">
+              endpoint="editorImage"
+              onClientUploadComplete={(res) => {
+                setUploading(false);
+                if (res && res[0].url) insertImage(res[0].url);
+              }}
+              onUploadError={(err) => {
+                setUploading(false);
+                alert(`Upload error: ${err.message}`);
+              }}
+              onUploadBegin={() => setUploading(true)}
+              appearance={{
+                button: "p-1 hover:bg-gray-800 rounded flex items-center",
+              }}
+              content={{
+                button: <ImageIcon size={18} />,
+              }}
+              // config={{
+              //   accept: ["image/*"], // 🔒 restrict to only images
+              // }}
+            />
+          )}
+        </div>
         <EmojiPicker
           onEmojiSelect={(emoji) => {
             editor?.chain().focus().insertContent(emoji.native).run();

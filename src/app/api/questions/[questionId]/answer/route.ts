@@ -2,34 +2,32 @@ import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: NextRequest, context: any) {
   try {
     const cookie = cookies();
     const userC = cookie.get("stackit_user_data");
     const user = userC ? JSON.parse(userC.value) : null;
-    console.log("user", user);
+    console.log("user", user)
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const data = await request.json();
-    const { userId, questionId, description } = data;
+    const { questionId } = await context.params;
+    console.log("questionId", questionId)
+
+    const userId = user?.id;
+
+    const { description } = await request.json();
+    console.log("description", description)
+
     const answerId = request.nextUrl.searchParams.get("answerId");
-    console.log("Received answer data:", data);
 
     if (!userId || !questionId || !description) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
-    }
-
-    // Check if user exists
-    const userData = await prisma.user.findUnique({
-      where: { id: String(userId) },
-    });
-    if (!userData) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Check if question exists
@@ -70,8 +68,8 @@ export async function PATCH(request: NextRequest) {
     // Otherwise, create new answer
     const newAnswer = await prisma.answer.create({
       data: {
-        userId,
-        questionId,
+        userId: String(userId),
+        questionId: Number(questionId),
         description,
       },
     });
@@ -83,7 +81,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error: any) {
     console.error("PATCH /api/answers error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { message: error.message || "Internal server error" },
       { status: 500 }
     );
   }
