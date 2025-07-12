@@ -5,17 +5,17 @@ import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toogle";
-import CustomAdminSideBar from "@/components/CustomAdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Menu } from "lucide-react";
 import { QueryProvider } from "@/utils/QueryProvider";
-import FloatingNotesCanvas from "./(module)/projects/_component/NotesCanvas";
 import Navbar from "@/components/Navbar";
 
 export const metadata = {
-  title: "IdeoCity",
-  description: "Validate and build your product ideas",
+  title: "StackIt",
+  description:
+    "StackIt is a minimal and user-friendly Q&A platform that enables collaborative learning and structured knowledge sharing within a focused community.",
 };
+
 
 export default function RootLayout({
   children,
@@ -38,7 +38,6 @@ export default function RootLayout({
                 <Toaster position="top-right" />
                 <div className="flex min-h-screen w-full">
                   <SidebarProvider>
-                    <CustomAdminSideBar />
                     <Navbar />
                     <main className="flex-1 overflow-x-hidden max-w-[100vw] dark:bg-background-secondary bg-background-primary">
                       {/* Top bar with Theme toggle and Sidebar Trigger for mobile */}
@@ -51,7 +50,6 @@ export default function RootLayout({
                         <ThemeToggle />
                       </div> */}
                       {children}
-                      <FloatingNotesCanvas />
                     </main>
                   </SidebarProvider>
                 </div>

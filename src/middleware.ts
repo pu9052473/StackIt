@@ -16,9 +16,6 @@ export async function middleware(request: NextRequest) {
     "/callback",
     "/api/auth/session",
     "/about",
-    "/privacypolicy",
-    "/termsandconditions",
-    "/usepolicy",
     "/api/auth/callback",
   ];
   const isPublicApiUserRoute = pathname.startsWith("/api/users");
@@ -29,7 +26,7 @@ export async function middleware(request: NextRequest) {
   if (user && isAuthPage) {
     return NextResponse.redirect(
       new URL(
-        user.user_metadata.role == "USER" ? "/projects" : "/admin",
+        user.user_metadata.role == "USER" ? "/quesions" : "/admin",
         request.url
       )
     );
@@ -41,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
   // If user tries to access /admin but is not an admin
   if (pathname.startsWith("/admin") && user?.user_metadata.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/projects", request.url));
+    return NextResponse.redirect(new URL("/quesions", request.url));
   }
 
   return NextResponse.next();

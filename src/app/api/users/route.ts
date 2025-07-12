@@ -9,6 +9,8 @@ export async function POST(request: NextRequest) {
     const setCookie = request.nextUrl.searchParams.get("setCookie");
     const { id, email, role, name } = data;
 
+    console.log("Received data:", data);
+
     if (!id || !email || !role || !name) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -69,6 +71,25 @@ export async function POST(request: NextRequest) {
     }
 
     return response;
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const onlyUserName = req.nextUrl.searchParams.get("onlyUserName");
+  try {
+    if (onlyUserName === "true") {
+      const users = await prisma.user.findMany({
+        select: { userName: true },
+      });
+      return NextResponse.json({ users }, { status: 200 });
+    }
+    const users = await prisma.user.findMany();
+    return NextResponse.json({ users }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "Internal server error" },

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       data: {
         id: data?.user?.id,
         email: data?.user?.email!,
-        name: data?.user?.user_metadata?.full_name || "User",
+        userName: data?.user?.email?.split('@')[0] || "User",
         role: data?.user?.user_metadata?.role || "USER",
       },
     });

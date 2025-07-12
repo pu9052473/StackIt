@@ -5,7 +5,6 @@ import { createBrowserClient } from "@supabase/ssr";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import Loader from "@/components/Loader";
 import { Prisma, ROLE } from "@prisma/client";
 
 const supabase = createBrowserClient(
@@ -21,7 +20,7 @@ type UserWithRelations = Prisma.UserGetPayload<{}>;
 type UserType = {
   id: string;
   email: string;
-  name: string | null;
+  userName: string;
   role: ROLE;
 } | null;
 
@@ -66,7 +65,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUser = async () => {
     const user = getUserDataFromCookie();
     if (user) {
-      setUser(user);
+      setUser({
+        id: user.id,
+        email: user.email,
+        userName: user.userName,
+        role: user.role,
+      });
       setLoading(false);
       return;
     }

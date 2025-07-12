@@ -18,7 +18,6 @@ export async function GET(
 
     const user = await prisma.user.findUnique({
       where: { id: String(userId) },
-      include: { package: true },
     });
 
     console.log("Fetched user:", user);

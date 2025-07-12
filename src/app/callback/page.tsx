@@ -32,7 +32,7 @@ const AuthLoader = () => {
           },
         })
         .then((res) => {
-          router.push(res.data.user.role?.admin ? "/admin" : "/projects");
+          router.push(res.data.user.role?.admin ? "/admin" : "/");
         })
         .catch((err) => {
           console.error("Failed to send code or token:", err);
