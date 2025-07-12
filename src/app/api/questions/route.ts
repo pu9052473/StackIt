@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
       include: {
         user: { select: { userName: true } },
-        answer: true,
+        answer_AnswerToQuestion: true,
       },
       skip: (page - 1) * limit,
       take: limit,

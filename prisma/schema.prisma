@@ -25,32 +25,34 @@ model User {
 }
 
 model Question {
-  id              Int            @id @default(autoincrement())
-  userId          String
-  title           String
-  tag             String[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  correctAnswerId Int?           @unique
-  isAnswered      Boolean        @default(false)
-  description     Json
-  Notification    Notification[]
-  correctAnswer   Answer?        @relation("CorrectAnswer", fields: [correctAnswerId], references: [id])
-  user            User           @relation("question_to_user", fields: [userId], references: [id])
-  answer          Answer[]       @relation("AnswerToQuestion")
+  id                                      Int            @id @default(autoincrement())
+  userId                                  String
+  title                                   String
+  tag                                     String[]
+  createdAt                               DateTime       @default(now())
+  updatedAt                               DateTime       @updatedAt
+  correctAnswerId                         Int?           @unique
+  isAnswered                              Boolean        @default(false)
+  description                             Json
+  notification                            Notification[] @relation("NotificationToQuestion")
+  answer_Question_correctAnswerIdToAnswer Answer?        @relation("Question_correctAnswerIdToAnswer", fields: [correctAnswerId], references: [id])
+  user                                    User           @relation("question_to_user", fields: [userId], references: [id])
+  answer_AnswerToQuestion                 Answer[]       @relation("AnswerToQuestion")
 }
 
 model Answer {
-  id                      Int        @id @default(autoincrement())
-  userId                  String
-  questionId              Int
-  createdAt               DateTime   @default(now())
-  updatedAt               DateTime   @updatedAt
-  description             Json
-  user                    User       @relation("answer_to_user", fields: [userId], references: [id])
-  comment                 Comment[]
-  correctAnswerOfQuestion Question?  @relation("CorrectAnswer")
-  Question                Question[] @relation("AnswerToQuestion")
+  id                                        Int        @id @default(autoincrement())
+  userId                                    String
+  questionId                                Int
+  createdAt                                 DateTime   @default(now())
+  updatedAt                                 DateTime   @updatedAt
+  description                               Json
+  upVote                                    Int        @default(0)
+  downVote                                  Int        @default(0)
+  user                                      User       @relation("answer_to_user", fields: [userId], references: [id])
+  comment                                   Comment[]
+  question_Question_correctAnswerIdToAnswer Question?  @relation("Question_correctAnswerIdToAnswer")
+  question_AnswerToQuestion                 Question[] @relation("AnswerToQuestion")
 }
 
 model Comment {
@@ -71,7 +73,7 @@ model Notification {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   questionId  Int
-  Question    Question @relation(fields: [questionId], references: [id])
+  question    Question @relation("NotificationToQuestion", fields: [questionId], references: [id])
   user        User     @relation("notification_to_user", fields: [userId], references: [id])
 }
 
