@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { JSONContent } from "@tiptap/react";
 import { ReadOnlyViewer } from "@/components/editor/ViewOnlyContent";
-import TiptapEditor from "@/components/editor/RichTextEditor";
+import {TiptapEditor} from "@/components/editor/RichTextEditor";
 
 export default function QuestionDetailPage() {
   const { questionId } = useParams();

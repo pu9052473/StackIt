@@ -1,5 +1,5 @@
 "use client";
-import TiptapEditor from "@/components/editor/RichTextEditor";
+import { TiptapEditor } from "@/components/editor/RichTextEditor";
 import { JSONContent } from "@tiptap/react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -147,11 +147,11 @@ export default function AskQuestionPage() {
   const isTitleValid = formData.title.trim().length >= 10;
   const isDescriptionValid =
     formData.description.content && formData.description.content.length > 0;
-  const {user} = useAuth();
+  const { user } = useAuth();
   console.log("user: ", user);
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-text-primary mb-2">
             Ask a public question
