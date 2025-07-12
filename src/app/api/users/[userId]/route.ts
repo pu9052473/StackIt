@@ -72,8 +72,6 @@ export async function PATCH(
     // Filter only fields with values (not undefined)
     const updateData: any = {};
     const allowedFields = [
-      "name",
-      "location",
       "profession",
       "age",
       "about",

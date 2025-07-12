@@ -264,46 +264,7 @@ export const ProfileSkeleton = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
-
-            {/* Package Details */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              className="dark:bg-card-dark bg-card border border-border-DEFAULT rounded-3xl p-6 shadow-lg"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Skeleton className="bg-slate-200 dark:bg-slate-600 w-5 h-5 rounded" />
-                <Skeleton className="bg-slate-200 dark:bg-slate-600 h-6 w-24" />
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="bg-slate-200 dark:bg-slate-600 h-4 w-20" />
-                  <Skeleton className="bg-slate-200 dark:bg-slate-600 h-6 w-16 rounded-full" />
-                </div>
-
-                <Skeleton className="bg-slate-200 dark:bg-slate-600 h-8 w-16" />
-
-                <div className="space-y-2">
-                  <Skeleton className="bg-slate-200 dark:bg-slate-600 h-4 w-32" />
-                  <div className="space-y-1">
-                    {[1, 2, 3, 4].map((item) => (
-                      <motion.div
-                        key={item}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.3 + item * 0.1 }}
-                        className="flex items-center gap-2"
-                      >
-                        <Skeleton className="bg-slate-200 dark:bg-slate-600 w-3 h-3 rounded" />
-                        <Skeleton className="bg-slate-200 dark:bg-slate-600 h-3 w-28" />
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            </motion.div>            
           </div>
         </div>
       </div>
