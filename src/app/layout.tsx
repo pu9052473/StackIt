@@ -13,7 +13,6 @@ export const metadata = {
     "StackIt is a minimal and user-friendly Q&A platform that enables collaborative learning and structured knowledge sharing within a focused community.",
 };
 
-
 export default function RootLayout({
   children,
 }: {
@@ -25,21 +24,21 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             {/* <ProtectedRoute> */}
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <Toaster position="top-right" />
-                <div className="flex min-h-screen w-full">
-                    <Navbar />
-                    <main className="mt-16 flex-1 overflow-x-hidden max-w-[100vw] dark:bg-background-secondary bg-background-primary">
-                        <Breadcrumbs />
-                      {children}
-                    </main>
-                </div>
-              </ThemeProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Toaster position="top-right" />
+              <div className="flex min-h-screen w-full bg-black">
+                <Navbar />
+                <main className="mt-16 flex-1 overflow-x-hidden max-w-[100vw] dark:bg-background-secondary bg-background-primary">
+                  <Breadcrumbs />
+                  {children}
+                </main>
+              </div>
+            </ThemeProvider>
             {/* </ProtectedRoute> */}
           </AuthProvider>
         </QueryProvider>

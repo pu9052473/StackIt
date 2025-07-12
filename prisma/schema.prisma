@@ -47,6 +47,8 @@ model Answer {
   createdAt                                 DateTime   @default(now())
   updatedAt                                 DateTime   @updatedAt
   description                               Json
+  upVote                                    Int        @default(0)
+  downVote                                  Int        @default(0)
   user                                      User       @relation("answer_to_user", fields: [userId], references: [id])
   comment                                   Comment[]
   question_Question_correctAnswerIdToAnswer Question?  @relation("Question_correctAnswerIdToAnswer")
