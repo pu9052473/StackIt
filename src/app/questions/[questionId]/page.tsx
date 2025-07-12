@@ -173,6 +173,9 @@ export default function QuestionDetailPage() {
       toast.error("Failed to submit your answer");
     } finally {
       setLoading(false);
+      setEditorContent(undefined);
+      setEditingAnswer(null);
+      setIsEditing(false);
     }
   };
 

@@ -15,6 +15,8 @@ export async function GET(
 
     const userId = req.nextUrl.searchParams.get("userId");
 
+    console.log(userId)
+
     if (!userId) {
       return NextResponse.json(
         { message: "User ID not found" },
@@ -27,9 +29,11 @@ export async function GET(
       include: { question: true },
     });
 
+    console.log("Fetched notifications:", notifications);
+
     return NextResponse.json(
       { message: "Notification fetched", notifications },
-      { status: 400 }
+      { status: 200 }
     );
   } catch (error: any) {
     console.error("GET /api/users/:userId/notification error:", error);
