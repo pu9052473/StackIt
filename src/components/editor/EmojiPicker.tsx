@@ -20,7 +20,7 @@ export const EmojiPicker = ({ onEmojiSelect }: { onEmojiSelect: (emoji: any) => 
         <Smile size={18} />
       </button>
       {open && (
-        <div className="absolute z-50 mt-2">
+        <div className="fixed z-50 mt-2 h-full w-full">
           <Picker
             data={data}
             onEmojiSelect={(e: any) => {

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { JSONContent } from "@tiptap/react";
 import { ReadOnlyViewer } from "@/components/editor/ViewOnlyContent";
-import TiptapEditor from "@/components/editor/RichTextEditor";
+import { TiptapEditor } from "@/components/editor/RichTextEditor";
 import { useQuery } from "@tanstack/react-query";
 import {
   Edit,
@@ -18,8 +18,10 @@ import {
   MessageSquare,
   ChevronDown,
   ChevronUp,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Input } from "@/components/ui/input";
 
 // lib/fetchAnswers.ts
 export const fetchAnswersByQuestionId = async (questionId: string | number) => {
@@ -55,6 +57,14 @@ export default function QuestionDetailPage() {
   const [loading, setLoading] = useState(false);
   const [editingAnswer, setEditingAnswer] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Question editing states
+  const [isEditingQuestion, setIsEditingQuestion] = useState(false);
+  const [editingQuestionTitle, setEditingQuestionTitle] = useState("");
+  const [editingQuestionContent, setEditingQuestionContent] = useState<
+    JSONContent | undefined
+  >();
+  const [questionLoading, setQuestionLoading] = useState(false);
 
   // Comment states
   const [commentEditorContent, setCommentEditorContent] = useState<
@@ -244,6 +254,64 @@ export default function QuestionDetailPage() {
     setIsEditing(false);
   };
 
+  // Question editing handlers
+  const handleEditQuestion = () => {
+    setEditingQuestionTitle(question.title);
+    setEditingQuestionContent(question.description);
+    setIsEditingQuestion(true);
+  };
+
+  const handleQuestionSubmit = async () => {
+    if (!editingQuestionTitle.trim() || !editingQuestionContent) return;
+
+    setQuestionLoading(true);
+
+    try {
+      const res = await fetch(`/api/questions?questionId=${questionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editingQuestionTitle.trim(),
+          description: editingQuestionContent,
+          tags: question.tag,
+        }),
+      });
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error("API error response:", result);
+        toast.error(result.message || "Something went wrong");
+        return;
+      }
+
+      toast.success("Question updated successfully");
+
+      // Update the question state with the new data
+      setQuestion({
+        ...question,
+        title: editingQuestionTitle.trim(),
+        description: editingQuestionContent,
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Reset editing state
+      setIsEditingQuestion(false);
+      setEditingQuestionTitle("");
+      setEditingQuestionContent(undefined);
+    } catch (error) {
+      console.error("handleQuestionSubmit error:", error);
+      toast.error("Failed to update question");
+    } finally {
+      setQuestionLoading(false);
+    }
+  };
+
+  const handleCancelQuestionEdit = () => {
+    setEditingQuestionTitle("");
+    setEditingQuestionContent(undefined);
+    setIsEditingQuestion(false);
+  };
+
   const handleAddComment = (answerId: number) => {
     setActiveCommentAnswerId(answerId);
     setCommentEditorContent(undefined);
@@ -297,38 +365,137 @@ export default function QuestionDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
         {/* Question Header */}
-        <div className="bg-card-dark rounded-lg border border-border p-4 sm:p-6 mb-6">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-primary mb-3 break-words">
-            {question.title}
-          </h1>
+        <div
+          className={`bg-card-dark rounded-lg border p-4 sm:p-6 mb-6 transition-colors ${
+            isEditingQuestion
+              ? "border-primary/50 bg-primary/5"
+              : "border-border"
+          }`}
+        >
+          {isEditingQuestion ? (
+            // Edit Question Form
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-text-primary">
+                  Edit Question
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelQuestionEdit}
+                  className="text-text-secondary hover:text-text-primary"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-text-secondary mb-4">
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span>Asked by {question.user?.userName || "Anonymous"}</span>
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  Question Title
+                </label>
+                <Input
+                  value={editingQuestionTitle}
+                  onChange={(e) => setEditingQuestionTitle(e.target.value)}
+                  placeholder="Enter your question title..."
+                  className="bg-background border-border text-text-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  Question Description
+                </label>
+                <TiptapEditor
+                  key="edit-question"
+                  content={editingQuestionContent}
+                  onChange={(content) => setEditingQuestionContent(content)}
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
+                  disabled={
+                    questionLoading ||
+                    !editingQuestionTitle.trim() ||
+                    !editingQuestionContent
+                  }
+                  onClick={handleQuestionSubmit}
+                >
+                  {questionLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Question"
+                  )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="border-border hover:bg-border"
+                  onClick={handleCancelQuestionEdit}
+                >
+                  Cancel Edit
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span>{format(new Date(question.createdAt), "PPP")}</span>
-            </div>
-          </div>
+          ) : (
+            // Display Question
+            <>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-primary mb-3 break-words">
+                {question.title}
+              </h1>
 
-          <div className="prose dark:prose-invert max-w-none mb-4">
-            <ReadOnlyViewer content={question.description} />
-          </div>
+              {/* Question Tags */}
+              {question.tag && question.tag.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {question.tag.map((tag: string, index: number) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full border border-primary/20 hover:bg-primary/20 transition-colors"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
 
-          {user?.id === question.userId && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-card-dark border-border hover:bg-border"
-              onClick={() => alert("Edit feature pending")}
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Question
-            </Button>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-text-secondary mb-4">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span>Asked by {question.user?.userName || "Anonymous"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{format(new Date(question.createdAt), "PPP")}</span>
+                </div>
+                {question.updatedAt &&
+                  question.updatedAt !== question.createdAt && (
+                    <span className="text-xs text-primary">(edited)</span>
+                  )}
+              </div>
+
+              <div className="prose dark:prose-invert max-w-none mb-4">
+                <ReadOnlyViewer content={question.description} />
+              </div>
+
+              {user?.id === question.userId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-card-dark border-border hover:bg-border"
+                  onClick={handleEditQuestion}
+                  disabled={isEditingQuestion}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Question
+                </Button>
+              )}
+            </>
           )}
         </div>
 
@@ -576,50 +743,51 @@ export default function QuestionDetailPage() {
         </div>
 
         {/* Answer Editor */}
-        <div className="bg-card-dark rounded-lg border border-border p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-text-primary">
-              {editingAnswer ? "Edit Your Answer" : "Your Answer"}
-            </h3>
-          </div>
+        {!isEditingQuestion && (
+          <div className="bg-card-dark rounded-lg border border-border p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-text-primary">
+                {editingAnswer ? "Edit Your Answer" : "Your Answer"}
+              </h3>
+            </div>
+            <div className="mb-4">
+              <TiptapEditor
+                key={editingAnswer?.id || "new-answer"} // Force re-render when switching between edit/new
+                content={editorContent}
+                onChange={(content) => setEditorContent(content)}
+              />
+            </div>
 
-          <div className="mb-4">
-            <TiptapEditor
-              key={editingAnswer?.id || "new-answer"}
-              content={editorContent}
-              onChange={(content) => setEditorContent(content)}
-            />
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
-              disabled={loading || !editorContent}
-              onClick={handleAnswerSubmit}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {editingAnswer ? "Updating..." : "Posting..."}
-                </>
-              ) : editingAnswer ? (
-                "Update Answer"
-              ) : (
-                "Post Answer"
-              )}
-            </Button>
-
-            {editingAnswer && (
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="outline"
-                className="border-border hover:bg-border"
-                onClick={handleCancelEdit}
+                className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
+                disabled={loading || !editorContent}
+                onClick={handleAnswerSubmit}
               >
-                Cancel Edit
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {editingAnswer ? "Updating..." : "Posting..."}
+                  </>
+                ) : editingAnswer ? (
+                  "Update Answer"
+                ) : (
+                  "Post Answer"
+                )}
               </Button>
-            )}
+
+              {editingAnswer && (
+                <Button
+                  variant="outline"
+                  className="border-border hover:bg-border"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel Edit
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

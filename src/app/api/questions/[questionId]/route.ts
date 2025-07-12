@@ -7,14 +7,10 @@ export async function GET(request: NextRequest, context: any) {
   const question = await prisma.question.findUnique({
     where: { id: Number(questionId) },
     include: {
-      answer_AnswerToQuestion: {
-        include: {
-          user: true,
-        },
-      },
+      user: true,
+      answer_AnswerToQuestion: true,
     },
   });
-  console.log(question);
   return NextResponse.json(
     { message: "Found Question", question },
     { status: 200 }
