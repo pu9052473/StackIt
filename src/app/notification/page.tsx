@@ -1,9 +1,11 @@
-"use client"
+"use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Bell, X, Clock, MessageCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
+// Notification type
 type Notification = {
   id: number;
   questionId: number;
@@ -23,114 +25,60 @@ type NotificationDialogProps = {
   notifications: Notification[];
 };
 
-// Mock data - replace with actual API call
-const mockNotifications = [
-  {
-    id: 1,
-    questionId: 101,
-    userId: "user123",
-    description:
-      "You were mentioned in a question about React hooks and performance optimization",
-    createdAt: "2025-01-15T10:30:00Z",
-    question: {
-      id: 101,
-      title: "How to optimize React hooks performance?",
-      description: "I need help with optimizing my React hooks...",
-    },
-  },
-  {
-    id: 2,
-    questionId: 102,
-    userId: "user123",
-    description:
-      "You were mentioned in a question about database design patterns",
-    createdAt: "2025-01-14T15:45:00Z",
-    question: {
-      id: 102,
-      title: "Best practices for database schema design",
-      description: "What are the best practices for designing...",
-    },
-  },
-  {
-    id: 3,
-    questionId: 103,
-    userId: "user123",
-    description: "You were mentioned in a question about API authentication",
-    createdAt: "2025-01-13T09:15:00Z",
-    question: {
-      id: 103,
-      title: "JWT vs Session-based authentication",
-      description: "Which authentication method is better...",
-    },
-  },
-  {
-    id: 4,
-    questionId: 104,
-    userId: "user123",
-    description: "You were mentioned in a question about frontend frameworks",
-    createdAt: "2025-01-12T14:20:00Z",
-    question: {
-      id: 104,
-      title: "React vs Vue.js comparison",
-      description: "I'm trying to decide between React and Vue...",
-    },
-  },
-  {
-    id: 5,
-    questionId: 105,
-    userId: "user123",
-    description: "You were mentioned in a question about deployment strategies",
-    createdAt: "2025-01-11T11:30:00Z",
-    question: {
-      id: 105,
-      title: "Docker deployment best practices",
-      description: "What are the best practices for Docker...",
-    },
-  },
-];
-const fetchNotifications = async (userId: string) => {
-  const response = await fetch(`/api/users/${userId}/notification`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch user data");
-  }
-
-  const data = await response.json();
-  return data.notifications || [];
-};
-
-// Custom hook for notifications - replace with actual useQuery
-const useNotifications = (userId: string) => {
+// ✅ Real-time notification hook
+export const useRealtimeNotifications = () => {
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Simulate API call
-  const data = mockNotifications.filter(
-    (notification) => notification.userId === userId
-  );
+  useEffect(() => {
+    if (!user?.id) return;
 
-  // For actual implementation, replace with:
-  // const { data, isLoading, error } = useQuery({
-  //   queryKey: ['notifications', user?.id],
-  //   queryFn: () => fetchNotifications(user?.id as tring),
-  //   enabled: !!user?.id,
-  // });
+    // Fetch initial notifications
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`/api/notification?userId=${user.id}`);
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+      } catch (err) {
+        console.error("Failed to fetch initial notifications", err);
+      }
+    };
 
-  return { data, isLoading, error };
+    fetchNotifications();
+
+    // Subscribe to Supabase real-time
+    const channel = supabase
+      .channel("notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "Notification",
+          filter: `userId=eq.${user.id}`,
+        },
+        (payload) => {
+          const newNotification = payload.new as Notification;
+          setNotifications((prev) => [newNotification, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  return notifications;
 };
 
-// Dialog component using shadcn/ui structure
+// ✅ Notification Dialog UI
 const NotificationDialog = ({
   isOpen,
   onClose,
   notifications,
 }: NotificationDialogProps) => {
-  interface FormatTimeAgo {
-    (dateString: string): string;
-  }
-
-  const formatTimeAgo: FormatTimeAgo = (dateString) => {
+  const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
@@ -149,7 +97,6 @@ const NotificationDialog = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="w-full max-w-md max-h-[80vh] bg-white dark:bg-zinc-900 rounded-lg shadow-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-purple-600" />
@@ -170,7 +117,6 @@ const NotificationDialog = ({
           </button>
         </div>
 
-        {/* Content */}
         <div className="overflow-y-auto max-h-[calc(80vh-80px)]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4">
@@ -181,7 +127,7 @@ const NotificationDialog = ({
             </div>
           ) : (
             <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {notifications.map((notification: any) => (
+              {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
@@ -219,45 +165,12 @@ const NotificationDialog = ({
   );
 };
 
+// ✅ Main Page
 const NotificationPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const currentUserId = "user123"; // Replace with actual current user ID
+  const notifications = useRealtimeNotifications();
 
-  const {
-    data: notifications,
-    isLoading,
-    error,
-  } = useNotifications(currentUserId);
-
-  const handleNotificationClick = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
-        <div className="text-zinc-600 dark:text-zinc-400">
-          Loading notifications...
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
-        <div className="text-red-600 dark:text-red-400">
-          Error loading notifications
-        </div>
-      </div>
-    );
-  }
-
-  const unreadCount = notifications?.length || 0;
+  const unreadCount = notifications.length;
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 p-4 sm:p-6 lg:p-8">
@@ -267,9 +180,8 @@ const NotificationPage = () => {
             Notifications
           </h1>
 
-          {/* Notification Button */}
           <button
-            onClick={handleNotificationClick}
+            onClick={() => setIsDialogOpen(true)}
             className="relative p-3 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full shadow-lg border border-zinc-200 dark:border-zinc-700 transition-all duration-200 hover:shadow-xl"
           >
             <Bell className="w-6 h-6 text-zinc-700 dark:text-zinc-300" />
@@ -281,7 +193,6 @@ const NotificationPage = () => {
           </button>
         </div>
 
-        {/* Page Content */}
         <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 sm:p-8">
           <div className="text-center py-12">
             <Bell className="w-16 h-16 text-zinc-400 dark:text-zinc-600 mx-auto mb-4" />
@@ -293,7 +204,7 @@ const NotificationPage = () => {
               updates
             </p>
             <button
-              onClick={handleNotificationClick}
+              onClick={() => setIsDialogOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
             >
               <Bell className="w-4 h-4" />
@@ -308,11 +219,11 @@ const NotificationPage = () => {
         </div>
       </div>
 
-      {/* Notification Dialog */}
+      {/* Real-time Notification Dialog */}
       <NotificationDialog
         isOpen={isDialogOpen}
-        onClose={handleCloseDialog}
-        notifications={notifications || []}
+        onClose={() => setIsDialogOpen(false)}
+        notifications={notifications}
       />
     </div>
   );

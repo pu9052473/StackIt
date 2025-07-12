@@ -42,13 +42,6 @@ export const Breadcrumbs = () => {
 
       <Breadcrumb>
         <BreadcrumbList className="text-muted-foreground">
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/" className="capitalize">
-                Home
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
           {breadcrumbs.map((crumb, i) => (
             <div key={i} className="flex items-center">
               <BreadcrumbSeparator>

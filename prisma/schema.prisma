@@ -18,6 +18,7 @@ model User {
   role         ROLE           @default(USER)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+  votes Vote[]
   answer       Answer[]       @relation("answer_to_user")
   comment      Comment[]      @relation("comment_to_user")
   notification Notification[] @relation("notification_to_user")
@@ -40,6 +41,16 @@ model Question {
   answer_AnswerToQuestion                 Answer[]       @relation("AnswerToQuestion")
 }
 
+model Vote{
+  id Int @id @default(autoincrement())
+  userId String
+  answerId Int
+  type String
+
+  user User @relation(fields: [userId],references: [id])
+  answer Answer @relation(fields: [answerId],references: [id])
+}
+
 model Answer {
   id                                        Int        @id @default(autoincrement())
   userId                                    String
@@ -47,12 +58,15 @@ model Answer {
   createdAt                                 DateTime   @default(now())
   updatedAt                                 DateTime   @updatedAt
   description                               Json
-  upVote                                    Int        @default(0)
   downVote                                  Int        @default(0)
+  upVote                                    Int        @default(0)
   user                                      User       @relation("answer_to_user", fields: [userId], references: [id])
+  
+  votes Vote[]
   comment                                   Comment[]
+  
   question_Question_correctAnswerIdToAnswer Question?  @relation("Question_correctAnswerIdToAnswer")
-  question_AnswerToQuestion                 Question[] @relation("AnswerToQuestion")
+  question_AnswerToQuestion                 Question @relation("AnswerToQuestion",fields: [questionId],references: [id])
 }
 
 model Comment {

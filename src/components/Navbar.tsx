@@ -8,11 +8,14 @@ import { motion, AnimatePresence, easeOut, easeInOut } from "framer-motion";
 
 import logo_dark from "../../public/logo_dark.svg";
 import logo_light from "../../public/logo_light.svg";
+import { NotificationBell } from "./Notification";
+import { useAuth } from "@/context/AuthContext";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     // Initial animation - navbar becomes visible
@@ -32,13 +35,6 @@ const Navbar = () => {
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "auto";
   }, [mobileOpen]);
-
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Services", href: "/services" },
-    { name: "Contact", href: "/contact" },
-  ];
 
   // Animation variants for the navbar
   const navbarVariants = {
@@ -183,30 +179,13 @@ const Navbar = () => {
               </Link>
             </motion.div>
 
-            {/* Desktop Nav */}
             <motion.div
               variants={contentVariants}
               initial="initial"
               animate={isVisible ? "visible" : "initial"}
-              className="hidden md:flex items-center space-x-6"
+              className="hidden md:flex items-center space-x-4"
             >
-              {navLinks.map((link, index) => (
-                <motion.div
-                  key={link.name}
-                  variants={contentVariants}
-                  custom={index}
-                >
-                  <Link
-                    href={link.href}
-                    className="relative text-text-inverse dark:text-text-primary font-medium text-sm group overflow-hidden"
-                  >
-                    <span className="relative z-10 transition-colors duration-300 group-hover:text-primary">
-                      {link.name}
-                    </span>
-                    <span className="mt-1 absolute inset-x-0 -bottom-1 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                  </Link>
-                </motion.div>
-              ))}
+              <NotificationBell />
             </motion.div>
 
             {/* Sign In Button - Hidden on mobile */}
@@ -216,15 +195,26 @@ const Navbar = () => {
               animate={isVisible ? "visible" : "initial"}
               className="hidden md:block"
             >
-              <Link href="/signin">
+              {user ? (
                 <motion.button
-                  className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
+                  onClick={signOut}
+                  className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-red-400/30"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  Sign In
+                  Sign Out
                 </motion.button>
-              </Link>
+              ) : (
+                <Link href="/signin">
+                  <motion.button
+                    className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Sign In
+                  </motion.button>
+                </Link>
+              )}
             </motion.div>
 
             {/* Burger Menu - Mobile only */}
@@ -299,39 +289,32 @@ const Navbar = () => {
             >
               <div className="p-6 pt-20">
                 <div className="space-y-6">
-                  {navLinks.map((link, index) => (
-                    <motion.div
-                      key={link.name}
-                      variants={sidebarItemVariants}
-                      custom={index}
-                      whileHover={{ x: 8 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Link
-                        href={link.href}
-                        onClick={() => setMobileOpen(false)}
-                        className="block text-lg font-medium text-text-inverse dark:text-text-primary hover:text-primary transition-all duration-200 py-2 border-b border-primary/10 hover:border-primary/30"
-                      >
-                        {link.name}
-                      </Link>
-                    </motion.div>
-                  ))}
-
                   <motion.div
-                    variants={sidebarItemVariants}
-                    className="mt-8"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    variants={contentVariants}
+                    initial="initial"
+                    animate={isVisible ? "visible" : "initial"}
+                    className="hidden md:block"
                   >
-                    <Link
-                      href="/signin"
-                      onClick={() => setMobileOpen(false)}
-                      className="block"
-                    >
-                      <button className="w-full bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25">
-                        Sign In
-                      </button>
-                    </Link>
+                    {user ? (
+                      <motion.button
+                        onClick={signOut}
+                        className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-red-400/30"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Sign Out
+                      </motion.button>
+                    ) : (
+                      <Link href="/signin">
+                        <motion.button
+                          className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Sign In
+                        </motion.button>
+                      </Link>
+                    )}
                   </motion.div>
                 </div>
               </div>
