@@ -32,6 +32,8 @@ export const signUpWithEmail = async (
       },
     },
   });
+
+  console.log("Datao f sesinon:", data);
   await fetch("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

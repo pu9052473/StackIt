@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       data: {
         id: user.id,
         email: user.email!,
-        name: user.user_metadata?.full_name || "User",
+        userName: user?.email?.split('@')[0] || "User",
         role: user.user_metadata?.role || "USER",
       },
     });
