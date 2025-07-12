@@ -25,9 +25,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  answer   Answer[]   @relation("answer_to_user")
-  question Question[] @relation("question_to_user")
-  comment  Comment[]  @relation("comment_to_user")
+  answer       Answer[]       @relation("answer_to_user")
+  question     Question[]     @relation("question_to_user")
+  comment      Comment[]      @relation("comment_to_user")
   notification Notification[] @relation("notification_to_user")
 }
 
@@ -41,8 +41,9 @@ model Question {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   User     @relation("question_to_user", fields: [userId], references: [id])
   answer Answer[]
+  notification Notification[]
+  user   User     @relation("question_to_user", fields: [userId], references: [id])
 }
 
 model Answer {
@@ -54,10 +55,9 @@ model Answer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User     @relation("answer_to_user", fields: [userId], references: [id])
-  question Question @relation(fields: [questionId], references: [id])
-
   comment Comment[]
+  question Question @relation(fields: [questionId], references: [id])
+  user     User     @relation("answer_to_user", fields: [userId], references: [id])
 }
 
 model Comment {
@@ -69,17 +69,19 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   User   @relation("comment_to_user", fields: [userId], references: [id])
   answer Answer @relation(fields: [answerId], references: [id])
+  user   User   @relation("comment_to_user", fields: [userId], references: [id])
 }
 
 model Notification {
   id          Int    @id @default(autoincrement())
+  questionId  Int
   userId      String
   description String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation("notification_to_user", fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+  user     User     @relation("notification_to_user", fields: [userId], references: [id])
 }
